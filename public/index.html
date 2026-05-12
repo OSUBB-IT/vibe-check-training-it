@@ -4,30 +4,129 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>VibeCheck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"]
+            },
+            boxShadow: {
+              glow: "0 0 80px rgba(99, 102, 241, 0.28)",
+              card: "0 24px 80px rgba(0, 0, 0, 0.38)"
+            }
+          }
+        }
+      };
+    </script>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
-    <!-- Frontend = Clientul din restaurant: aici utilizatorul vede meniul si apasa butoane. -->
-    <!-- API = Chelnerul: script.js trimite cererile dintre client si bucatarie. -->
-    <!-- Backend = Bucataria: server.js primeste comenzile si le proceseaza, chiar daca logica e stricata. -->
-    <!-- Baza de date = Camara: in acest demo, posturile si like-urile sunt tinute in memoria serverului. -->
-    <button id="postVibeButton" type="button">Post Vibe</button>
+  <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased">
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute left-[-15%] top-[-20%] h-[34rem] w-[34rem] rounded-full bg-indigo-500/30 blur-3xl"></div>
+      <div class="absolute right-[-10%] top-[15%] h-[30rem] w-[30rem] rounded-full bg-cyan-400/20 blur-3xl"></div>
+      <div class="absolute bottom-[-18%] left-[25%] h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/20 blur-3xl"></div>
+    </div>
 
-    <main class="vibe-shell">
-      <h1>VibeCheck</h1>
-      <p class="subtitle">Instrument de formare cu UI si business logic intentionat defectuoase.</p>
+    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-8 sm:px-8 lg:px-10">
+      <header class="mb-10 flex flex-col gap-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-glow backdrop-blur-2xl sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p class="mb-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 shadow-lg shadow-cyan-950/30">
+            Debugging IT Training Lab
+          </p>
+          <h1 class="max-w-3xl bg-gradient-to-r from-white via-cyan-100 to-indigo-200 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-7xl">
+            VibeCheck
+          </h1>
+          <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+            O aplicatie premium la suprafata, construita intentionat cu interactiuni frustrante si bug-uri logice pentru exercitii de debugging.
+          </p>
+        </div>
+        <div class="flex flex-col gap-4">
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark or light mode">
+            <span class="theme-toggle-track">
+              <span class="theme-toggle-icon theme-sun">☀</span>
+              <span class="theme-toggle-thumb"></span>
+              <span class="theme-toggle-icon theme-moon">☾</span>
+            </span>
+          </button>
+          <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-5 text-sm text-slate-300 shadow-card backdrop-blur-xl">
+            <p class="font-semibold text-white">Status API</p>
+            <p id="apiStatus" class="mt-2 max-w-xs text-slate-400">Se initializeaza conexiunea cu serverul.</p>
+          </div>
+        </div>
+      </header>
 
-      <section class="composer" aria-label="Creeaza o postare">
-        <label for="statusInput">Statusul vibe-ului</label>
-        <input id="statusInput" type="text" placeholder="Scrie un status aproape invizibil" />
-        <p id="apiStatus" class="api-status">Chelnerul/API-ul asteapta o comanda.</p>
-      </section>
+      <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <form id="composerForm" class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-card backdrop-blur-2xl sm:p-8">
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent"></div>
+          <div class="mb-6">
+            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200/80">Create Post</p>
+            <h2 class="mt-3 text-3xl font-bold tracking-tight text-white">Captureaza un vibe</h2>
+            <p class="mt-3 text-sm leading-6 text-slate-400">
+              Input-ul arata impecabil, dar limiteaza tacit continutul la 10 caractere.
+            </p>
+          </div>
 
-      <section class="feed" aria-label="Lista de postari">
-        <h2>Postari</h2>
-        <ul id="postsList"></ul>
+          <label for="contentInput" class="mb-3 block text-sm font-medium text-slate-200">Continut postare</label>
+          <div class="relative">
+            <textarea
+              id="contentInput"
+              rows="6"
+              class="w-full resize-none rounded-3xl border border-white/10 bg-slate-950/60 px-5 py-4 pr-14 text-base leading-7 text-white shadow-inner outline-none ring-1 ring-white/5 transition focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-300/10"
+              placeholder="Scrie ceva memorabil... daca UX-ul permite."
+            ></textarea>
+            <span id="validationBadge" class="validation-badge invalid" aria-hidden="true">✕</span>
+          </div>
+
+          <div class="mt-6 h-16">
+            <button
+              id="postVibeButton"
+              type="submit"
+              class="chase-button rounded-full bg-gradient-to-r from-cyan-300 via-indigo-400 to-fuchsia-400 px-7 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-indigo-500/30 transition duration-300 hover:scale-105 hover:shadow-cyan-400/40"
+            >
+              Post Vibe
+            </button>
+          </div>
+        </form>
+
+        <section class="rounded-[2rem] border border-white/10 bg-slate-900/40 p-4 shadow-card backdrop-blur-2xl sm:p-6">
+          <div class="mb-5 flex items-center justify-between gap-4 px-2">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.28em] text-fuchsia-200/80">Live Feed</p>
+              <h2 class="mt-2 text-3xl font-bold tracking-tight text-white">Postari</h2>
+            </div>
+            <button id="refreshButton" class="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/15">
+              Refresh
+            </button>
+          </div>
+          <ul id="postsList" class="grid gap-4"></ul>
+          <div id="infiniteLoader" class="mt-6 hidden items-center justify-center gap-3 rounded-3xl border border-white/10 bg-white/[0.06] px-5 py-4 text-sm font-medium text-slate-300">
+            <span class="loader-dot"></span>
+            Se incarca postari mai vechi...
+          </div>
+          <div id="scrollSentinel" class="h-8"></div>
+        </section>
       </section>
     </main>
+
+    <template id="postTemplate">
+      <li class="post-card relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.08] p-6 shadow-xl shadow-black/20 backdrop-blur-xl">
+        <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+        <p class="post-content pr-8 text-lg font-medium leading-8 text-slate-100"></p>
+        <button class="like-button" type="button" aria-label="Like post">♥</button>
+        <div class="mt-6 flex items-center justify-between text-sm text-slate-400">
+          <span class="created-at"></span>
+          <span class="like-count rounded-full border border-white/10 bg-white/10 px-3 py-1 font-semibold text-cyan-100"></span>
+        </div>
+        <button class="delete-button mt-5 rounded-full border border-rose-300/20 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20" type="button">
+          Delete
+        </button>
+      </li>
+    </template>
 
     <script src="/script.js"></script>
   </body>

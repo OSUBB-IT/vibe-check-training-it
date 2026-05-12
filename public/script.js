@@ -1,87 +1,207 @@
+const composerForm = document.querySelector("#composerForm");
 const postVibeButton = document.querySelector("#postVibeButton");
-const statusInput = document.querySelector("#statusInput");
+const contentInput = document.querySelector("#contentInput");
 const postsList = document.querySelector("#postsList");
+const postTemplate = document.querySelector("#postTemplate");
 const apiStatus = document.querySelector("#apiStatus");
+const refreshButton = document.querySelector("#refreshButton");
+const themeToggle = document.querySelector("#themeToggle");
+const validationBadge = document.querySelector("#validationBadge");
+const infiniteLoader = document.querySelector("#infiniteLoader");
+const scrollSentinel = document.querySelector("#scrollSentinel");
 
-// In analogia restaurantului, acest fisier este clientul care vorbeste cu chelnerul/API-ul.
-// API-ul functioneaza, dar intoarce date impachetate intentionat prost pentru exercitiu.
-function normalizeBrokenApiPost(apiPost) {
-  return {
-    id: apiPost.post_id,
-    status: apiPost.vibeText,
-    likes: `${apiPost.likes} like-uri?`,
-    createdAt: apiPost.created_at
-  };
+let chaseCount = 0;
+let currentPage = 1;
+let isLoadingMore = false;
+
+function setStatus(message) {
+  apiStatus.textContent = message;
 }
 
-function sneakButtonAway() {
-  const maxLeft = Math.max(window.innerWidth - 28, 8);
-  const maxTop = Math.max(window.innerHeight - 28, 8);
+function frustrateInput(event) {
+  const nextValue = event.target.value.slice(0, 10);
 
-  postVibeButton.style.left = `${Math.floor(Math.random() * maxLeft)}px`;
-  postVibeButton.style.top = `${Math.floor(Math.random() * maxTop)}px`;
+  // BUG UX intentionat: continutul este trunchiat tacit la 10 caractere, fara feedback vizual.
+  event.target.value = nextValue;
+  updatePassiveAggressiveValidation();
+}
+
+function updatePassiveAggressiveValidation() {
+  const isEvenLength = contentInput.value.length > 0 && contentInput.value.length % 2 === 0;
+
+  // BUG UX intentionat: validarea nu verifica utilitatea continutului, ci doar paritatea numarului de caractere.
+  validationBadge.textContent = isEvenLength ? "✓" : "✕";
+  validationBadge.classList.toggle("valid", isEvenLength);
+  validationBadge.classList.toggle("invalid", !isEvenLength);
+  postVibeButton.disabled = !isEvenLength;
+  postVibeButton.classList.toggle("opacity-40", !isEvenLength);
+  postVibeButton.classList.toggle("cursor-not-allowed", !isEvenLength);
+}
+
+function chaseMouse() {
+  chaseCount += 1;
+
+  if (chaseCount % 5 === 0) {
+    postVibeButton.style.setProperty("--chase-x", "0px");
+    postVibeButton.style.setProperty("--chase-y", "0px");
+    return;
+  }
+
+  const offsetX = Math.round((Math.random() - 0.5) * 76);
+  const offsetY = Math.round((Math.random() - 0.5) * 42);
+
+  postVibeButton.style.setProperty("--chase-x", `${offsetX}px`);
+  postVibeButton.style.setProperty("--chase-y", `${offsetY}px`);
+}
+
+function formatDate(value) {
+  if (!value) return "fara data";
+
+  return new Intl.DateTimeFormat("ro-RO", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
 }
 
 function renderPosts(posts) {
   postsList.innerHTML = "";
 
+  if (!posts.length) {
+    postsList.innerHTML = `<li class="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-slate-400">Nu exista postari inca.</li>`;
+    return;
+  }
+
   posts.forEach((post) => {
-    const item = document.createElement("li");
-    item.className = "post-card";
+    const item = postTemplate.content.firstElementChild.cloneNode(true);
+    const content = item.querySelector(".post-content");
+    const createdAt = item.querySelector(".created-at");
+    const likeCount = item.querySelector(".like-count");
+    const likeButton = item.querySelector(".like-button");
+    const deleteButton = item.querySelector(".delete-button");
 
-    const text = document.createElement("p");
-    text.className = "post-text";
-    text.textContent = post.status;
-
-    const likeButton = document.createElement("button");
-    likeButton.className = "like-button";
-    likeButton.type = "button";
-    likeButton.textContent = "Like";
+    content.textContent = post.content || "Postare fara continut";
+    createdAt.textContent = formatDate(post.created_at);
+    likeCount.textContent = `${post.like_count ?? 0} likes`;
     likeButton.addEventListener("click", () => likePost(post.id));
+    deleteButton.addEventListener("click", () => deletePost(post.id));
 
-    const likes = document.createElement("span");
-    likes.className = "likes-count";
-    likes.textContent = post.likes;
-
-    item.append(text, likeButton, likes);
     postsList.append(item);
   });
 }
 
-async function loadPosts() {
-  const response = await fetch("/api/posts");
-  const data = await response.json();
-  const posts = data.posts.map(normalizeBrokenApiPost);
+function lieAboutThemeChange() {
+  themeToggle.classList.toggle("is-light");
 
-  apiStatus.textContent = data.message;
-  renderPosts(posts);
+  const cards = [...document.querySelectorAll(".post-card")];
+  if (!cards.length) {
+    setStatus("Toggle-ul a schimbat tema, dar nu exista postari pe care sa se observe bug-ul.");
+    return;
+  }
+
+  cards.forEach((card) => card.classList.remove("liar-theme-post", "liar-theme-like"));
+
+  const randomCard = cards[Math.floor(Math.random() * cards.length)];
+  const brokenMode = Math.random() > 0.5 ? "liar-theme-post" : "liar-theme-like";
+
+  // BUG UX intentionat: toggle-ul promite o tema globala, dar modifica doar o postare sau butonul ei de Like.
+  randomCard.classList.add(brokenMode);
+  setStatus("Toggle-ul a modificat doar un fragment aleatoriu din feed, nu tema globala.");
 }
 
-async function createPost() {
-  const response = await fetch("/api/posts", {
+async function requestJson(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed with ${response.status}`);
+  }
+
+  return data;
+}
+
+async function loadPosts() {
+  setStatus("Se incarca postarile din Supabase...");
+  currentPage = 1;
+  const data = await requestJson("/posts?page=1");
+  renderPosts(data.posts || []);
+  setStatus("Postarile au fost incarcate, dar ordinea este intentionat suspecta.");
+}
+
+async function loadMorePosts() {
+  if (isLoadingMore) return;
+
+  isLoadingMore = true;
+  infiniteLoader.classList.remove("hidden");
+  infiniteLoader.classList.add("flex");
+
+  try {
+    currentPage += 1;
+    const data = await requestJson(`/posts?page=${currentPage}`);
+
+    // BUG UX intentionat: in loc sa adauge postarile la final, lista curenta este inlocuita complet.
+    renderPosts(data.posts || []);
+    setStatus("Scroll-ul infinit a incarcat date, dar a uitat postarile existente.");
+  } catch (error) {
+    setStatus(error.message);
+  } finally {
+    infiniteLoader.classList.add("hidden");
+    infiniteLoader.classList.remove("flex");
+    isLoadingMore = false;
+  }
+}
+
+async function createPost(event) {
+  event.preventDefault();
+
+  const content = contentInput.value;
+  if (!content.trim()) {
+    setStatus("Nu se poate publica o postare goala.");
+    return;
+  }
+
+  setStatus("Se publica vibe-ul...");
+  await requestJson("/posts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: statusInput.value })
+    body: JSON.stringify({ content })
   });
-  const data = await response.json();
 
-  statusInput.value = "";
-  apiStatus.textContent = data.warning;
+  contentInput.value = "";
+  updatePassiveAggressiveValidation();
   await loadPosts();
 }
 
 async function likePost(postId) {
-  const response = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
-  const data = await response.json();
-
-  apiStatus.textContent = data.warning;
+  setStatus("Se trimite like-ul catre backend...");
+  await requestJson(`/posts/${postId}/like`, { method: "POST" });
   await loadPosts();
 }
 
-postVibeButton.addEventListener("mouseover", sneakButtonAway);
-postVibeButton.addEventListener("focus", sneakButtonAway);
-postVibeButton.addEventListener("click", createPost);
+async function deletePost(postId) {
+  setStatus("Se sterge postarea selectata...");
+  await requestJson(`/posts/${postId}`, { method: "DELETE" });
+  await loadPosts();
+}
+
+contentInput.addEventListener("input", frustrateInput);
+postVibeButton.addEventListener("mouseenter", chaseMouse);
+postVibeButton.addEventListener("mousemove", chaseMouse);
+themeToggle.addEventListener("click", lieAboutThemeChange);
+composerForm.addEventListener("submit", createPost);
+refreshButton.addEventListener("click", () => loadPosts().catch((error) => setStatus(error.message)));
+
+const infiniteObserver = new IntersectionObserver(
+  (entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      loadMorePosts();
+    }
+  },
+  { rootMargin: "320px" }
+);
+
+infiniteObserver.observe(scrollSentinel);
+updatePassiveAggressiveValidation();
 
 loadPosts().catch((error) => {
-  apiStatus.textContent = `Chelnerul/API-ul a scapat tava: ${error.message}`;
+  setStatus(error.message);
 });
