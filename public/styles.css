@@ -1,0 +1,172 @@
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: #7fff00;
+  background: #004d4d;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+.vibe-shell {
+  width: min(930px, 92vw);
+  margin: 17px auto 80px 9vw;
+  padding: 9px 43px 21px 4px;
+  border: 7px dotted #ff7a00;
+  background: linear-gradient(111deg, #005f5f, #1c0061 63%, #333300);
+}
+
+h1 {
+  margin: 51px 0 3px 18px;
+  color: #b6ff00;
+  font-family: Papyrus, fantasy;
+  font-size: clamp(3rem, 12vw, 7rem);
+  letter-spacing: -5px;
+  text-shadow: 5px -3px 0 #ff00fb, -8px 7px 0 #001eff;
+}
+
+.subtitle {
+  max-width: 48ch;
+  margin: 2px 0 39px 71px;
+  font-family: "Comic Sans MS", cursive;
+  font-size: 1.2rem;
+  color: #39ff14;
+}
+
+#postVibeButton {
+  position: fixed;
+  top: 3px;
+  left: 3px;
+  z-index: 10;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #fff;
+  border-radius: 0;
+  color: #070707;
+  background: #ff00cc;
+  font-size: 8px;
+  line-height: 8px;
+  cursor: pointer;
+}
+
+.composer {
+  margin: 0 0 11px 32px;
+  padding: 31px 3px 8px 54px;
+  border: 4px ridge #ccff00;
+}
+
+.composer label {
+  display: block;
+  margin-bottom: 19px;
+  font-family: Papyrus, fantasy;
+  font-size: 1.9rem;
+}
+
+#statusInput {
+  width: min(480px, 72vw);
+  padding: 10px;
+  color: #fff;
+  background: #fff8b3;
+  border: 6px inset #00ff99;
+  font-family: Papyrus, fantasy;
+  font-size: 1rem;
+}
+
+#statusInput::placeholder {
+  color: #fff;
+}
+
+.api-status {
+  margin: 27px 0 0 -41px;
+  color: #00ff0d;
+  font-family: "Comic Sans MS", cursive;
+}
+
+.feed {
+  margin: 61px 10px 0 4px;
+  padding: 6px 21px 57px 0;
+}
+
+.feed h2 {
+  margin-left: 91px;
+  color: #faff00;
+  font-family: Papyrus, fantasy;
+}
+
+#postsList {
+  display: grid;
+  gap: 31px 5px;
+  padding-left: 7px;
+  list-style: square;
+}
+
+.post-card {
+  position: relative;
+  min-height: 86px;
+  padding: 11px 4px 13px 19px;
+  color: #a6ff00;
+  background: #005151;
+  border: 3px dashed #ff00cc;
+  font-family: Papyrus, fantasy;
+}
+
+.post-card:nth-child(even) {
+  margin-left: 83px;
+  margin-right: 2px;
+  transform: rotate(-1deg);
+}
+
+.post-card:nth-child(odd) {
+  margin-left: 11px;
+  margin-right: 69px;
+  transform: rotate(1.5deg);
+}
+
+.post-text {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 1.25rem;
+}
+
+.like-button {
+  position: absolute;
+  top: 18px;
+  left: 46px;
+  padding: 2px 19px;
+  color: #001919;
+  background: #fbff00;
+  border: 5px groove #ff00ea;
+  font-family: "Comic Sans MS", cursive;
+  opacity: 0.84;
+}
+
+.likes-count {
+  display: inline-block;
+  margin: 44px 0 0 151px;
+  color: #39ff14;
+  font-family: "Comic Sans MS", cursive;
+}
+
+@media (max-width: 640px) {
+  .vibe-shell {
+    width: 95vw;
+    margin-left: 1vw;
+    padding-right: 6px;
+  }
+
+  h1 {
+    margin-left: 31px;
+    font-size: 3.1rem;
+  }
+
+  .composer {
+    margin-left: 0;
+    padding-left: 13px;
+  }
+
+  .post-card:nth-child(even),
+  .post-card:nth-child(odd) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VibeCheck</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- Frontend = Clientul din restaurant: aici utilizatorul vede meniul si apasa butoane. -->
+    <!-- API = Chelnerul: script.js trimite cererile dintre client si bucatarie. -->
+    <!-- Backend = Bucataria: server.js primeste comenzile si le proceseaza, chiar daca logica e stricata. -->
+    <!-- Baza de date = Camara: in acest demo, posturile si like-urile sunt tinute in memoria serverului. -->
+    <button id="postVibeButton" type="button">Post Vibe</button>
+
+    <main class="vibe-shell">
+      <h1>VibeCheck</h1>
+      <p class="subtitle">Instrument de formare cu UI si business logic intentionat defectuoase.</p>
+
+      <section class="composer" aria-label="Creeaza o postare">
+        <label for="statusInput">Statusul vibe-ului</label>
+        <input id="statusInput" type="text" placeholder="Scrie un status aproape invizibil" />
+        <p id="apiStatus" class="api-status">Chelnerul/API-ul asteapta o comanda.</p>
+      </section>
+
+      <section class="feed" aria-label="Lista de postari">
+        <h2>Postari</h2>
+        <ul id="postsList"></ul>
+      </section>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
