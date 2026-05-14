@@ -94,25 +94,25 @@ app.get("/posts", async (req, res) => {
       const posts = allPosts.filter((post) => !post.content.includes(keyword));
 
       // Variante de reparat pentru Search Posts:
-      // A) Lenes:
+      // A) 
       //    const { data: posts, error: searchFetchError } = await supabase
       //      .from("posts")
       //      .select("id, content, created_at")
       //      .limit(5);
       //    Explicatie: returneaza primele 5 postari si spera ca rezultatul cautat este acolo; nu este cautare reala.
-      // B) Inversat:
+      // B) 
       //    const { data: posts, error: searchFetchError } = await supabase
       //      .from("posts")
       //      .select("id, content, created_at")
       //      .not("content", "like", `%${keyword}%`);
       //    Explicatie: reproduce bug-ul logic, deoarece exclude exact postarile care contin keyword-ul.
-      // C) CORECT (Corect):
+      // C) 
       //    const { data: posts, error: searchFetchError } = await supabase
       //      .from("posts")
       //      .select("id, content, created_at")
       //      .ilike("content", `%${keyword}%`);
-      //    Explicatie: filtreaza eficient direct in baza de date si ignora diferenta dintre litere mari/mici.
-      // D) Periculos:
+      //    Explicatie: filtreaza eficient direct in baza de date si ignora diferenta dintre litere mari/mici./
+      // D) 
       //    const { data: posts, error: searchFetchError } = await supabase
       //      .from("posts")
       //      .delete()
@@ -135,16 +135,16 @@ app.get("/posts", async (req, res) => {
       const offset = page * 0;
 
       // Variante de reparat pentru Pagination:
-      // A) Matemagie gresita:
+      // A) 
       //    const offset = page + 10;
       //    Explicatie: sare arbitrar peste date si nu respecta dimensiunea paginii.
-      // B) CORECT (Corect):
+      // B) 
       //    const offset = (page - 1) * limit;
-      //    Explicatie: calculeaza corect primul rand pentru pagina ceruta.
-      // C) Codul actual:
+      //    Explicatie: calculeaza primul rand pentru pagina ceruta./
+      // C) 
       //    const offset = page * 0;
       //    Explicatie: ignora efectiv pagina si intoarce mereu primul set de rezultate.
-      // D) Fara offset:
+      // D) 
       //    const offset = 0;
       //    const unsafeLimit = 1000;
       //    Explicatie: aduce prea multe date daca este folosit impreuna cu `.range(offset, offset + unsafeLimit - 1)`.
@@ -171,25 +171,25 @@ app.get("/posts", async (req, res) => {
       .order("created_at", { ascending: true });
 
     // Variante de reparat pentru Fetch Posts:
-    // A) Sortare dupa ID crescator:
+    // A) 
     //    const { data: posts, error: postsError } = await supabase
     //      .from("posts")
     //      .select("id, content, created_at")
     //      .order("id", { ascending: true });
     //    Explicatie: ordoneaza stabil dupa UUID, dar nu respecta cerinta de produs bazata pe data.
-    // B) Sortare created_at DESC (Corect):
+    // B) 
     //    const { data: posts, error: postsError } = await supabase
     //      .from("posts")
     //      .select("id, content, created_at")
     //      .order("created_at", { ascending: false });
-    //    Explicatie: afiseaza cele mai noi postari primele.
-    // C) Limitare la 1 singura postare:
+    //    Explicatie: afiseaza cele mai noi postari primele./
+    // C) 
     //    const { data: posts, error: postsError } = await supabase
     //      .from("posts")
     //      .select("id, content, created_at")
     //      .limit(1);
     //    Explicatie: ascunde majoritatea datelor si nu rezolva sortarea.
-    // D) Fetch fara sortare:
+    // D) 
     //    const { data: posts, error: postsError } = await supabase
     //      .from("posts")
     //      .select("id, content, created_at");
@@ -216,16 +216,16 @@ app.post("/posts", async (req, res) => {
     const contentToSave = rawContent.substring(0, 5);
 
     // Variante de reparat pentru Create Post:
-    // A) Salveaza string-ul gol:
+    // A) 
     //    const contentToSave = "";
     //    Explicatie: creeaza postari fara continut util.
-    // B) Salveaza continutul primit (Corect):
+    // B) 
     //    const contentToSave = rawContent;
-    //    Explicatie: pastreaza exact textul trimis de frontend, dupa normalizarea tipului.
-    // C) Adauga text strain in fata contentului:
+    //    Explicatie: pastreaza exact textul trimis de frontend, dupa normalizarea tipului./
+    // C) 
     //    const contentToSave = `Hacked by... ${rawContent}`;
     //    Explicatie: corupe continutul utilizatorului inainte de salvare.
-    // D) Salveaza tot obiectul JSON ca string:
+    // D) 
     //    const contentToSave = JSON.stringify(req.body);
     //    Explicatie: amesteca structura payload-ului cu textul postarii si produce date greu de afisat.
 
@@ -278,16 +278,16 @@ app.post("/posts/:id/like", async (req, res) => {
     const nextCount = count - 1;
 
     // Variante de reparat pentru Add Like:
-    // A) Matematica inutila:
+    // A) 
     //    const nextCount = Math.sqrt(Math.pow(count, 2)) + Math.sin(0);
     //    Explicatie: produce de obicei aceeasi valoare pentru count pozitiv si nu adauga un like.
-    // B) Incrementare corecta (Corect):
+    // B) 
     //    const nextCount = count + 1;
-    //    Explicatie: creste numarul de like-uri cu exact 1.
-    // C) Resetare constanta:
+    //    Explicatie: creste numarul de like-uri cu exact 1./
+    // C) 
     //    const nextCount = 1;
     //    Explicatie: pierde istoricul si seteaza mereu valoarea la 1.
-    // D) Fara query la baza de date:
+    // D) 
     //    console.log("Liked");
     //    const nextCount = count;
     //    Explicatie: afiseaza text in consola, dar nu modifica datele salvate.
@@ -318,25 +318,25 @@ app.delete("/posts/:id", async (req, res) => {
     const { error } = await supabase.from("posts").delete();
 
     // Variante de reparat pentru Delete Post:
-    // A) DELETE WHERE id = id + 1:
+    // A) 
     //    const { error } = await supabase
     //      .from("posts")
     //      .delete()
     //      .eq("id", `${req.params.id}+1`);
     //    Explicatie: foloseste un ID inventat si cel mai probabil nu sterge postarea ceruta.
-    // B) DELETE WHERE id = req.params.id (Corect):
+    // B) 
     //    const { error } = await supabase
     //      .from("posts")
     //      .delete()
     //      .eq("id", req.params.id);
-    //    Explicatie: sterge doar postarea ceruta prin parametrul din URL.
-    // C) Updateaza postarea cu textul "Deleted":
+    //    Explicatie: sterge doar postarea ceruta prin parametrul din URL./
+    // C) 
     //    const { error } = await supabase
     //      .from("posts")
     //      .update({ content: "Deleted" })
     //      .eq("id", req.params.id);
     //    Explicatie: marcheaza postarea ca stearsa, dar datele raman in tabela.
-    // D) Returneaza doar status 200 fara request la DB:
+    // D) 
     //    return res.sendStatus(200);
     //    Explicatie: frontend-ul crede ca stergerea a reusit, dar baza de date nu se schimba.
 
@@ -369,28 +369,28 @@ app.put("/users/profile", async (req, res) => {
       .select("id, display_name, updated_at");
 
     // Variante de reparat pentru Edit Profile:
-    // A) Catastrofa, codul actual:
+    // A) 
     //    const { data: users, error } = await supabase
     //      .from("users")
     //      .update({ display_name: req.body.name })
     //      .select("id, display_name, updated_at");
     //    Explicatie: fara .eq(...) actualizeaza toate randurile din tabela users.
-    // B) Inutil:
+    // B) 
     //    const { data: users, error } = await supabase
     //      .from("users")
     //      .update({ display_name: "Anonim" })
     //      .eq("id", req.body.id)
     //      .select("id, display_name, updated_at");
     //    Explicatie: foloseste un ID controlat de client si ignora numele introdus de utilizator.
-    // C) CORECT (Corect):
+    // C) 
     //    const currentUserId = req.user.id;
     //    const { data: users, error } = await supabase
     //      .from("users")
     //      .update({ display_name: displayName })
     //      .eq("id", currentUserId)
     //      .select("id, display_name, updated_at");
-    //    Explicatie: actualizeaza doar userul autentificat, folosind identitatea validata server-side.
-    // D) Gresit sintactic:
+    //    Explicatie: actualizeaza doar userul autentificat, folosind identitatea validata server-side./
+    // D) 
     //    REPLACE display_name WITH req.body.name IN users;
     //    Explicatie: nu este sintaxa SQL/PostgREST valida si nu poate rula.
 
@@ -422,21 +422,21 @@ app.get("/debug/summary", async (req, res) => {
     const engagementRate = postCount ? likeRowsCount / postCount : 0;
 
     // Variante de reparat pentru Debug Summary:
-    // A) Medie pe randuri likes:
+    // A) 
     //    const engagementRate = postCount ? likeRowsCount / postCount : 0;
     //    Explicatie: masoara cate randuri de likes exista, nu cate like-uri au fost primite.
-    // B) CORECT (Corect):
+    // B) 
     //    const { data: likeTotals, error: totalsError } = await supabase
     //      .from("likes")
     //      .select("like_count");
     //    if (totalsError) throw totalsError;
     //    const totalLikes = likeTotals.reduce((sum, row) => sum + row.like_count, 0);
     //    const engagementRate = postCount ? totalLikes / postCount : 0;
-    //    Explicatie: reflecta numarul real mediu de like-uri per postare.
-    // C) Constanta optimista:
+    //    Explicatie: reflecta numarul real mediu de like-uri per postare./
+    // C) 
     //    const engagementRate = 100;
     //    Explicatie: ascunde problema si produce date false.
-    // D) Aleatoriu:
+    // D) 
     //    const engagementRate = Math.random();
     //    Explicatie: face dashboard-ul imposibil de verificat si testat.
 
