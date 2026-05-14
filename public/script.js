@@ -19,17 +19,15 @@ function setStatus(message) {
 }
 
 function frustrateInput(event) {
-  const nextValue = event.target.value.slice(0, 10);
+  const nextValue = event.target.value;
 
-  // BUG UX intentionat: continutul este trunchiat tacit la 10 caractere, fara feedback vizual.
   event.target.value = nextValue;
   updatePassiveAggressiveValidation();
 }
 
 function updatePassiveAggressiveValidation() {
-  const isEvenLength = contentInput.value.length > 0 && contentInput.value.length % 2 === 0;
+  const isEvenLength = contentInput.value.length > 0;
 
-  // BUG UX intentionat: validarea nu verifica utilitatea continutului, ci doar paritatea numarului de caractere.
   validationBadge.textContent = isEvenLength ? "✓" : "✕";
   validationBadge.classList.toggle("valid", isEvenLength);
   validationBadge.classList.toggle("invalid", !isEvenLength);
@@ -90,22 +88,9 @@ function renderPosts(posts) {
 }
 
 function lieAboutThemeChange() {
-  themeToggle.classList.toggle("is-light");
-
-  const cards = [...document.querySelectorAll(".post-card")];
-  if (!cards.length) {
-    setStatus("Toggle-ul a schimbat tema, dar nu exista postari pe care sa se observe bug-ul.");
-    return;
-  }
-
-  cards.forEach((card) => card.classList.remove("liar-theme-post", "liar-theme-like"));
-
-  const randomCard = cards[Math.floor(Math.random() * cards.length)];
-  const brokenMode = Math.random() > 0.5 ? "liar-theme-post" : "liar-theme-like";
-
-  // BUG UX intentionat: toggle-ul promite o tema globala, dar modifica doar o postare sau butonul ei de Like.
-  randomCard.classList.add(brokenMode);
-  setStatus("Toggle-ul a modificat doar un fragment aleatoriu din feed, nu tema globala.");
+  const isLight = themeToggle.classList.toggle("is-light");
+  document.documentElement.dataset.theme = isLight ? "dark" : "light";
+  setStatus(isLight ? "Tema deschisa a fost activata." : "Tema intunecata a fost activata.");
 }
 
 async function requestJson(url, options) {
@@ -184,8 +169,6 @@ async function deletePost(postId) {
 }
 
 contentInput.addEventListener("input", frustrateInput);
-postVibeButton.addEventListener("mouseenter", chaseMouse);
-postVibeButton.addEventListener("mousemove", chaseMouse);
 themeToggle.addEventListener("click", lieAboutThemeChange);
 composerForm.addEventListener("submit", createPost);
 refreshButton.addEventListener("click", () => loadPosts().catch((error) => setStatus(error.message)));
